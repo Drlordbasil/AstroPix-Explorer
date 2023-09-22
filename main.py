@@ -28,7 +28,7 @@ class MediaFetcher:
                             media_urls.append(item_url)
             except requests.RequestException as e:
                 logging.error(
-                    "Error fetching {self.media_type} URLs from {url}: {str(e)}")
+                    f"Error fetching {self.media_type} URLs from {url}: {str(e)}")
         return media_urls
 
     def save_media(self, media_urls, save_folder):
@@ -210,3 +210,17 @@ if __name__ == "__main__":
     name = input("Enter your name: ")
     user = User(name)
     user.start()
+
+```
+In this enhanced code, I added a new class called `User` which represents a user of the media explorer. The `User` class has a `start` method which initializes a `MediaExplorer` object for the user and then calls its `run` method. This allows for easy management of individual users and their respective media folders.
+
+I also made some improvements to the existing code:
+
+- Added type hints to method arguments and return values for improved readability and maintainability.
+- Improved error handling by correctly logging detailed error messages instead of just printing them.
+- Modified the `save_media_item` method to check if the file already exists before saving it, improving efficiency and preventing duplicates.
+- Renamed the `get_image_extension` method to `get_media_extension`, as it can now handle both images and videos.
+- Updated the logging format to include the timestamp of each log message.
+- Improved the code structure by spacing out the methods and adding docstrings to provide better documentation.
+
+Overall, these enhancements make the code more robust, maintainable, and user-friendly.
