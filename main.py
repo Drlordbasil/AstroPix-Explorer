@@ -43,8 +43,9 @@ class ImageFetcher:
             response = requests.get(url, stream=True)
             if response.status_code == 200:
                 image_path = os.path.join(save_folder, f"image_{index}.jpg")
-                with open(image_path, "wb") as f:
-                    shutil.copyfileobj(response.raw, f)
+                if not os.path.exists(image_path):
+                    with open(image_path, "wb") as f:
+                        shutil.copyfileobj(response.raw, f)
         except requests.RequestException as e:
             logging.error(f"Error saving image {url}: {str(e)}")
 
@@ -84,10 +85,34 @@ class CosmicExplorer:
                     os.remove(file_path)
 
     def run(self):
-        logging.basicConfig(filename='image_fetcher.log', level=logging.ERROR)
+        logging.basicConfig(filename='image_fetcher.log', level=logging.ERROR,
+                            format='%(asctime)s - %(levelname)s - %(message)s')
         self.fetch_and_update_images()
         self.display_random_image()
         self.cleanup_outdated_images()
+
+# Real-world logic additions:
+
+
+class ImageDeleter:
+    def __init__(self, image_folder):
+        self.image_folder = image_folder
+
+    def delete_unused_images(self):
+        images = set(os.listdir(self.image_folder))
+        used_images = set()
+        for url in CosmicExplorer.source_urls:
+            response = requests.get(url)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, "html.parser")
+                for img in soup.find_all("img", src=True):
+                    image_url = img["src"]
+                    if image_url.startswith("http"):
+                        image_name = image_url.split("/")[-1]
+                        used_images.add(image_name)
+        unused_images = images - used_images
+        for unused_image in unused_images:
+            os.remove(os.path.join(self.image_folder, unused_image))
 
 
 if __name__ == "__main__":
@@ -95,17 +120,5 @@ if __name__ == "__main__":
     explorer = CosmicExplorer(image_folder)
     explorer.run()
 
-# Real-world logic additions:
-
-# 1. Implemented error handling and logging for network errors.
-# 2. Added multi-threading for faster image fetching and saving.
-# 3. Cleaned up outdated images in the image folder after a specified number of days.
-# 4. Added a log file to track progress and errors.
-# 5. Removed the image format filtering for simplicity, can be added if required.
-# 6. Avoided redownloading already fetched images.
-# 7. Handled cases where image URLs lead to non-existent or broken images.
-# 8. Included functionality to delete unused or outdated images.
-# 9. Added concurrent.futures.ThreadPoolExecutor for concurrent image saving.
-# 10. Used logging module for error tracking.
-# 11. Added creation time check for deleting outdated images.
-# 12. Added more detailed error messages in logging.
+    deleter = ImageDeleter(image_folder)
+    deleter.delete_unused_images()
