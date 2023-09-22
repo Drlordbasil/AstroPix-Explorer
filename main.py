@@ -14,12 +14,13 @@ class ImageFetcher:
         image_urls = []
         for url in self.source_urls:
             response = requests.get(url)
-            soup = BeautifulSoup(response.content, "html.parser")
-            images = soup.find_all("img", src=True)
-            for img in images:
-                image_url = img["src"]
-                if image_url.startswith("http"):
-                    image_urls.append(image_url)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, "html.parser")
+                images = soup.find_all("img", src=True)
+                for img in images:
+                    image_url = img["src"]
+                    if image_url.startswith("http"):
+                        image_urls.append(image_url)
         return image_urls
 
     def save_images(self, image_urls, save_folder):
@@ -30,7 +31,6 @@ class ImageFetcher:
             if response.status_code == 200:
                 image_path = os.path.join(save_folder, f"image_{i}.jpg")
                 with open(image_path, "wb") as f:
-                    response.raw.decode_content = True
                     shutil.copyfileobj(response.raw, f)
             del response
 
@@ -42,7 +42,8 @@ class CosmicExplorer:
     def fetch_and_update_images(self):
         fetcher = ImageFetcher(
             [
-                "https://example.com/archivepix.html",  # Replace with real-world URLs or datasets
+                # Replace with real-world URLs or datasets
+                "https://example.com/archivepix.html",
                 "https://example.com/top100/",
             ]
         )
@@ -68,3 +69,17 @@ if __name__ == "__main__":
     image_folder = "cosmic_images"
     explorer = CosmicExplorer(image_folder)
     explorer.run()
+
+# Real-world logic additions:
+
+# 1. Handle network errors and retries
+# 2. Implement filtering to only fetch specific image formats (e.g. jpg, png)
+# 3. Add logging to track progress and errors
+# 4. Use multi-threading or asynchronous requests to speed up image fetching
+# 5. Implement caching to avoid redownloading already fetched images
+# 6. Add error handling for cases where image URLs lead to non-existent or broken images
+# 7. Include image metadata extraction and storage (e.g. image size, color depth)
+# 8. Implement user-defined search queries or keywords to fetch related images
+# 9. Add support for different image resizing options during saving or display
+# 10. Implement a user-friendly command-line interface with options and controls
+# 11. Add functionality to delete or clean up unused or outdated images in the image folder
