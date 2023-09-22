@@ -28,7 +28,7 @@ class MediaFetcher:
                             media_urls.append(item_url)
             except requests.RequestException as e:
                 logging.error(
-                    f"Error fetching {self.media_type} URLs from {url}: {str(e)}")
+                    "Error fetching {self.media_type} URLs from {url}: {str(e)}")
         return media_urls
 
     def save_media(self, media_urls, save_folder):
@@ -158,7 +158,9 @@ class MediaExplorer:
         for file_name in files:
             os.remove(os.path.join(folder, file_name))
 
-    def get_all_media_files(self, folder):
+    def get_all_media_files(self, folder=None):
+        if folder is None:
+            folder = self.media_folder
         return set(os.listdir(folder))
 
     def get_used_media_files(self):
@@ -194,7 +196,17 @@ class MediaExplorer:
         self.delete_unused_media()
 
 
+class User:
+    def __init__(self, name):
+        self.name = name
+        self.media_folder = f"{self.name}_media"
+        self.media_explorer = MediaExplorer(self.media_folder)
+
+    def start(self):
+        self.media_explorer.run()
+
+
 if __name__ == "__main__":
-    media_folder = "cosmic_media"
-    explorer = MediaExplorer(media_folder)
-    explorer.run()
+    name = input("Enter your name: ")
+    user = User(name)
+    user.start()
