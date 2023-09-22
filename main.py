@@ -1,12 +1,33 @@
-import requests
+# Enhanced by AI:
 from bs4 import BeautifulSoup
+import requests
 from PIL import Image
-import random
-import os
-import shutil
-import logging
 from concurrent.futures import ThreadPoolExecutor
-import time
+import logging
+import shutil
+import os
+Here are a few enhancements to your code:
+
+1. ** Separate code into different modules**: It's a good practice to separate classes and functions into different modules for better organization and maintainability. You can create separate files for each class and import them into your main script.
+
+2. ** Error handling**: It's important to handle errors gracefully and provide useful error messages. You can use try -except statements to catch exceptions and log appropriate error messages.
+
+3. ** Use f-strings**: Instead of concatenating strings, you can use f-strings to make your code more readable and concise.
+
+4. ** Use logger instead of print**: Instead of using print statements for logging, use the logging module to log informative messages. This will make it easier to track and debug issues.
+
+5. ** Use context managers**: Use context managers, such as `with ` statements, to automatically handle file operations and ensure resources are properly managed.
+
+6. ** Refactor media type checking**: Instead of using if -elif statements to check media type, you can use dictionary mapping to make the code more concise and extensible.
+
+7. ** Use list comprehension**: Use list comprehension to simplify loops and make the code more readable.
+
+8. ** Simplify code**: Simplify the code by removing unnecessary statements, variables, and imports.
+
+Here's the enhanced version of your code:
+
+*media.py: *
+```python
 
 
 class Media:
@@ -16,8 +37,8 @@ class Media:
     def open_media(self):
         if os.path.exists(self.file_path):
             if self.get_media_type() == "image":
-                img = Image.open(self.file_path)
-                img.show()
+                with Image.open(self.file_path) as img:
+                    img.show()
             elif self.get_media_type() == "video":
                 # Code to play video
                 print("Video playing.")
@@ -35,12 +56,16 @@ class Media:
 
     def get_media_type(self) -> str:
         extension = os.path.splitext(self.file_path)[-1]
-        if extension.lower() in [".jpg", ".jpeg", ".png", ".gif"]:
-            return "image"
-        elif extension.lower() in [".mp4", ".avi", ".mkv"]:
-            return "video"
-        else:
-            return ""
+        media_types = {
+            ".jpg": "image",
+            ".jpeg": "image",
+            ".png": "image",
+            ".gif": "image",
+            ".mp4": "video",
+            ".avi": "video",
+            ".mkv": "video"
+        }
+        return media_types.get(extension.lower(), "")
 
 
 class MediaFetcher:
@@ -56,10 +81,8 @@ class MediaFetcher:
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.content, "html.parser")
                     media = soup.find_all(self.media_type, src=True)
-                    for item in media:
-                        item_url = item["src"]
-                        if item_url.startswith("http"):
-                            media_urls.append(item_url)
+                    media_urls.extend(
+                        [item["src"] for item in media if item["src"].startswith("http")])
             except requests.RequestException as e:
                 logging.error(
                     f"Error fetching {self.media_type} URLs from {url}: {str(e)}")
@@ -86,12 +109,11 @@ class MediaFetcher:
             logging.error(f"Error saving {self.media_type} {url}: {str(e)}")
 
     def get_media_extension(self) -> str:
-        if self.media_type == "image":
-            return "jpg"
-        elif self.media_type == "video":
-            return "mp4"
-        else:
-            return ""
+        media_extensions = {
+            "image": "jpg",
+            "video": "mp4"
+        }
+        return media_extensions.get(self.media_type, "")
 
 
 class MediaExplorer:
@@ -188,15 +210,12 @@ class MediaExplorer:
             response = requests.get(query)
             soup = BeautifulSoup(response.content, "html.parser")
             media = soup.find_all(class_='lister-item mode-advanced')
-            media_urls = []
-            for item in media:
-                item_url = item.find('img')['src']
-                if item_url.startswith("http"):
-                    media_urls.append(item_url)
-        self.media_urls = media_urls
-        media_fetcher = MediaFetcher(self.media_urls, "image")
-        media_files = media_fetcher.fetchmedia_urls()
-        media_fetcher.savemedia(media_files, self.image_folder)
+            media_urls = [item.find('img')['src'] for item in media if item.find('img')[
+                'src'].startswith("http")]
+            self.media_urls = media_urls
+            media_fetcher = MediaFetcher(self.media_urls, "image")
+            media_files = media_fetcher.fetch_media_urls()
+            media_fetcher.save_media(media_files, self.image_folder)
         self.display_random_media()
         self.cleanup_outdated_media()
         self.delete_unused_media()
@@ -217,3 +236,6 @@ if __name__ == "__main__":
     name = input("Enter your name: ")
     user = User(name)
     user.start()
+```
+
+Please note that some parts of your code were not clear or had missing references, so I made educated assumptions where necessary. Adjustments may be required according to your specific requirements.
