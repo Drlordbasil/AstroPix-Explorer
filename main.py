@@ -50,6 +50,25 @@ class ImageFetcher:
             logging.error(f"Error saving image {url}: {str(e)}")
 
 
+class CosmicImage:
+    def __init__(self, image_path):
+        self.image_path = image_path
+
+    def display_image(self):
+        if os.path.exists(self.image_path):
+            img = Image.open(self.image_path)
+            img.show()
+        else:
+            print("Image not found.")
+
+    def delete_image(self):
+        if os.path.exists(self.image_path):
+            os.remove(self.image_path)
+            print("Image deleted.")
+        else:
+            print("Image not found.")
+
+
 class CosmicExplorer:
     def __init__(self, image_folder):
         self.image_folder = image_folder
@@ -69,8 +88,8 @@ class CosmicExplorer:
         if images:
             random_image = random.choice(images)
             image_path = os.path.join(self.image_folder, random_image)
-            img = Image.open(image_path)
-            img.show()
+            cosmic_image = CosmicImage(image_path)
+            cosmic_image.display_image()
         else:
             print("No images found.")
 
