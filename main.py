@@ -180,20 +180,34 @@ class MediaExplorer:
         return used_images, used_videos
 
     def run(self):
+        available_genres = ['comedy', 'fantasy', 'action', 'triller', 'sci-fi']
         logging.basicConfig(filename='media_updater.log', level=logging.ERROR,
                             format='%(asctime)s - %(levelname)s - %(message)s')
-        self.fetch_and_update_media()
+        for genre in available_genres:
+            query = f'https://www.imdb.com/genre/{genre}'
+            response = requests.get(query)
+            soup = BeautifulSoup(response.content, "html.parser")
+            media = soup.find_all(class_='lister-item mode-advanced')
+            media_urls = []
+            for item in media:
+                item_url = item.find('img')['src']
+                if item_url.startswith("http"):
+                    media_urls.append(item_url)
+        self.media_urls = media_urls
+        media_fetcher = MediaFetcher(self.media_urls, "image")
+        media_files = media_fetcher.fetchmedia_urls()
+        media_fetcher.savemedia(media_files, self.image_folder)
         self.display_random_media()
         self.cleanup_outdated_media()
         self.delete_unused_media()
 
 
 class User:
-    def __init__(self, name: str, source_image_urls: list[str], source_video_urls: list[str]):
+    def __init__(self, name: str):
         self.name = name
         self.media_folder = f"{self.name}_media"
         self.media_explorer = MediaExplorer(
-            self.media_folder, source_image_urls, source_video_urls)
+            self.media_folder, [])
 
     def start(self):
         self.media_explorer.run()
@@ -201,15 +215,5 @@ class User:
 
 if __name__ == "__main__":
     name = input("Enter your name: ")
-    source_image_urls = [
-        # Replace with real-world URLs or datasets
-        "https://example.com/archivepix.html",
-        "https://example.com/top100/",
-    ]
-    source_video_urls = [
-        # Replace with real-world URLs or datasets
-        "https://example.com/archivemovies.html",
-        "https://example.com/popularmovies/",
-    ]
-    user = User(name, source_image_urls, source_video_urls)
+    user = User(name)
     user.start()
