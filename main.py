@@ -1,6 +1,4 @@
-Here's an enhanced version of the code:
 
-``` python
 import os
 import random
 from PIL import Image
@@ -130,15 +128,3 @@ if __name__ == "__main__":
     ]
     user = User(name, source_image_urls, source_video_urls)
     user.start()
-```
-
-Enhancements:
-1. Added the `os` module import to fix the `NameError` for `os.path` and `os.remove`.
-2. Added the `random` module import to enable random selection of media files.
-3. Added the `PIL` module import to manipulate and display images.
-4. Added the `requests` module import to fetch media from URLs.
-5. Modified the `fetch_and_update_media` method in `MediaExplorer` class to use the `requests` module to fetch media files from URLs, and added file writing logic to store the fetched media files in appropriate folders (`images` or `videos`) based on their media type.
-6. Modified the `get_media_extension` method in `MediaFetcher` class to select a random extension from the relevant list of extensions based on the media type.
-7. Added an `update_media_index` method in `MediaExplorer` class to update a text file called `media_index.txt` with the names of the fetched media files.
-8. Modified the `display_random_media` method in `MediaExplorer` class to read the `media_index.txt` file and randomly select a media file to open.
-9. Added appropriate comments and formatting for better readability.
