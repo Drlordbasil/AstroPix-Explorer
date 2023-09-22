@@ -10,11 +10,11 @@ import time
 
 
 class MediaFetcher:
-    def __init__(self, source_urls, media_type):
+    def __init__(self, source_urls: list[str], media_type: str):
         self.source_urls = source_urls
         self.media_type = media_type
 
-    def fetch_media_urls(self):
+    def fetch_media_urls(self) -> list[str]:
         media_urls = []
         for url in self.source_urls:
             try:
@@ -31,7 +31,7 @@ class MediaFetcher:
                     f"Error fetching {self.media_type} URLs from {url}: {str(e)}")
         return media_urls
 
-    def save_media(self, media_urls, save_folder):
+    def save_media(self, media_urls: list[str], save_folder: str):
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
 
@@ -39,7 +39,7 @@ class MediaFetcher:
             for i, url in enumerate(media_urls):
                 executor.submit(self.save_media_item, url, save_folder, i)
 
-    def save_media_item(self, url, save_folder, index):
+    def save_media_item(self, url: str, save_folder: str, index: int):
         try:
             response = requests.get(url, stream=True)
             if response.status_code == 200:
@@ -51,7 +51,7 @@ class MediaFetcher:
         except requests.RequestException as e:
             logging.error(f"Error saving {self.media_type} {url}: {str(e)}")
 
-    def get_media_extension(self):
+    def get_media_extension(self) -> str:
         if self.media_type == "image":
             return "jpg"
         elif self.media_type == "video":
@@ -61,7 +61,7 @@ class MediaFetcher:
 
 
 class MediaItem:
-    def __init__(self, file_path):
+    def __init__(self, file_path: str):
         self.file_path = file_path
 
     def open_media(self):
@@ -84,7 +84,7 @@ class MediaItem:
         else:
             print("Media not found.")
 
-    def get_media_type(self):
+    def get_media_type(self) -> str:
         extension = os.path.splitext(self.file_path)[-1]
         if extension.lower() in [".jpg", ".jpeg", ".png", ".gif"]:
             return "image"
@@ -95,7 +95,7 @@ class MediaItem:
 
 
 class MediaExplorer:
-    def __init__(self, media_folder):
+    def __init__(self, media_folder: str):
         self.media_folder = media_folder
         self.image_folder = os.path.join(media_folder, "images")
         self.video_folder = os.path.join(media_folder, "videos")
@@ -141,12 +141,12 @@ class MediaExplorer:
         self.delete_media_files(unused_images, self.image_folder)
         self.delete_media_files(unused_videos, self.video_folder)
 
-    def cleanup_outdated_media(self, days=30):
+    def cleanup_outdated_media(self, days: int = 30):
         current_time = time.time()
         self.cleanup_outdated_files(self.image_folder, current_time, days)
         self.cleanup_outdated_files(self.video_folder, current_time, days)
 
-    def cleanup_outdated_files(self, folder, current_time, days):
+    def cleanup_outdated_files(self, folder: str, current_time: float, days: int):
         for file_name in os.listdir(folder):
             file_path = os.path.join(folder, file_name)
             if os.path.isfile(file_path):
@@ -154,16 +154,16 @@ class MediaExplorer:
                 if current_time - creation_time > days * 24 * 60 * 60:
                     os.remove(file_path)
 
-    def delete_media_files(self, files, folder):
+    def delete_media_files(self, files: set[str], folder: str):
         for file_name in files:
             os.remove(os.path.join(folder, file_name))
 
-    def get_all_media_files(self, folder=None):
+    def get_all_media_files(self, folder: str = None) -> set[str]:
         if folder is None:
             folder = self.media_folder
         return set(os.listdir(folder))
 
-    def get_used_media_files(self):
+    def get_used_media_files(self) -> tuple(set[str], set[str]):
         used_images, used_videos = set(), set()
         for url in self.source_image_urls:
             response = requests.get(url)
@@ -197,7 +197,7 @@ class MediaExplorer:
 
 
 class User:
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
         self.media_folder = f"{self.name}_media"
         self.media_explorer = MediaExplorer(self.media_folder)
@@ -210,17 +210,3 @@ if __name__ == "__main__":
     name = input("Enter your name: ")
     user = User(name)
     user.start()
-
-```
-In this enhanced code, I added a new class called `User` which represents a user of the media explorer. The `User` class has a `start` method which initializes a `MediaExplorer` object for the user and then calls its `run` method. This allows for easy management of individual users and their respective media folders.
-
-I also made some improvements to the existing code:
-
-- Added type hints to method arguments and return values for improved readability and maintainability.
-- Improved error handling by correctly logging detailed error messages instead of just printing them.
-- Modified the `save_media_item` method to check if the file already exists before saving it, improving efficiency and preventing duplicates.
-- Renamed the `get_image_extension` method to `get_media_extension`, as it can now handle both images and videos.
-- Updated the logging format to include the timestamp of each log message.
-- Improved the code structure by spacing out the methods and adding docstrings to provide better documentation.
-
-Overall, these enhancements make the code more robust, maintainable, and user-friendly.
