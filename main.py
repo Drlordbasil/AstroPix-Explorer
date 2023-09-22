@@ -53,15 +53,14 @@ class ImageFetcher:
 class CosmicExplorer:
     def __init__(self, image_folder):
         self.image_folder = image_folder
+        self.source_urls = [
+            # Replace with real-world URLs or datasets
+            "https://example.com/archivepix.html",
+            "https://example.com/top100/",
+        ]
 
     def fetch_and_update_images(self):
-        fetcher = ImageFetcher(
-            [
-                # Replace with real-world URLs or datasets
-                "https://example.com/archivepix.html",
-                "https://example.com/top100/",
-            ]
-        )
+        fetcher = ImageFetcher(self.source_urls)
         image_urls = fetcher.fetch_image_urls()
         fetcher.save_images(image_urls, self.image_folder)
 
@@ -84,24 +83,10 @@ class CosmicExplorer:
                 if current_time - creation_time > days * 24 * 60 * 60:
                     os.remove(file_path)
 
-    def run(self):
-        logging.basicConfig(filename='image_fetcher.log', level=logging.ERROR,
-                            format='%(asctime)s - %(levelname)s - %(message)s')
-        self.fetch_and_update_images()
-        self.display_random_image()
-        self.cleanup_outdated_images()
-
-# Real-world logic additions:
-
-
-class ImageDeleter:
-    def __init__(self, image_folder):
-        self.image_folder = image_folder
-
     def delete_unused_images(self):
         images = set(os.listdir(self.image_folder))
         used_images = set()
-        for url in CosmicExplorer.source_urls:
+        for url in self.source_urls:
             response = requests.get(url)
             if response.status_code == 200:
                 soup = BeautifulSoup(response.content, "html.parser")
@@ -114,11 +99,16 @@ class ImageDeleter:
         for unused_image in unused_images:
             os.remove(os.path.join(self.image_folder, unused_image))
 
+    def run(self):
+        logging.basicConfig(filename='image_fetcher.log', level=logging.ERROR,
+                            format='%(asctime)s - %(levelname)s - %(message)s')
+        self.fetch_and_update_images()
+        self.display_random_image()
+        self.cleanup_outdated_images()
+        self.delete_unused_images()
+
 
 if __name__ == "__main__":
     image_folder = "cosmic_images"
     explorer = CosmicExplorer(image_folder)
     explorer.run()
-
-    deleter = ImageDeleter(image_folder)
-    deleter.delete_unused_images()
